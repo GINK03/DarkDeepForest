@@ -1,9 +1,11 @@
 #include "DecisionTree.hpp"
 #include <iostream>
+
+
 DecisionTree::DecisionTree(){ }
 
-DecisionTree::DecisionTree(const vector <vector <FeatureType> >& features,
-  const vector <AnswerType>& answers,
+DecisionTree::DecisionTree(const vector<vector<FeatureType>>& features,
+  const vector<AnswerType>& answers,
   int minNodeSize,
   int maxLevel,
   int numRandomFeatures,
@@ -99,7 +101,7 @@ DecisionTree::DecisionTree(const vector <vector <FeatureType> >& features,
           gini += tmpGini * total[lr]/SZ(node.bags);
         }
         // BEGIN CUT HERE
-          cout << " curNode=" << curNode << " gini=" << gini << endl;
+        //  cout << " curNode=" << curNode << " gini=" << gini << endl;
         // END CUT HERE
 
 
