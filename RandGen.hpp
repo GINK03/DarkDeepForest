@@ -10,4 +10,6 @@ private:
 public:
   RandXor();
   unsigned int random();
+  static int rand_range_1_10();
+  static int rand_range_1_32();
 };
