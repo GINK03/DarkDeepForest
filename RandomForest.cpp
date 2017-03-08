@@ -1,4 +1,5 @@
 #include "RandomForest.hpp"
+#include "RandomTree.hpp"
 #include <vector>
 namespace RandomForest {
 
@@ -9,6 +10,12 @@ int sanitize(T& t) {
 
 RandomForest::RandomForest() {
   clear();
+}
+
+RandomForest::~RandomForest() {
+  for(auto p: m_trees) {
+    delete p;
+  }
 }
 
 void RandomForest::clear() {
@@ -22,7 +29,7 @@ void RandomForest::train(const std::vector<std::vector<FeatureType>>& features,
 {
   for(int i=0;i<treesNo;i++)
   {
-    m_trees.emplace_back(DecisionTree(features, answers, minNodeSize, 16, 2, 5));
+    m_trees.emplace_back(new DecisionTree(features, answers, minNodeSize, 16, 2, 5));
   }
 }
 
@@ -36,8 +43,9 @@ void RandomForest::train_noisy(const std::vector<std::vector<FeatureType>>& feat
 {
   for(int i=0;i<treesNo;i++)
   {
+    //m_trees.emplace_back(new RandomTree(features, answers, minNodeSize, 16, 2, 5));
     //五番目の引数がnumRandomFeatures(乱雑さを表現している。これを素性の数の限界値まで引き上げる)
-    m_trees.emplace_back(DecisionTree(features, answers, minNodeSize, maxLevel, numRandomFeatures, numRandomPositions));
+    m_trees.emplace_back(new RandomTree(features, answers, minNodeSize, maxLevel, numRandomFeatures, numRandomPositions));
   }
 }
  
@@ -51,7 +59,7 @@ AnswerType RandomForest::estimateClassification(std::vector <FeatureType> &featu
   int freq[NUM_CLASSES]={};
   for(int i=0;i<sanitize(m_trees);i++)
   {
-    freq[m_trees[i].estimate(features)]++;
+    freq[m_trees[i]->estimate(features)]++;
   }
   int bestFreq = -1;
   int bestC    = -1;
@@ -76,7 +84,7 @@ std::vector<double> RandomForest::predict(std::vector<FeatureType> &features)
   int freq[NUM_CLASSES]={};
   for(int i=0;i < sanitize(m_trees);i++)
   {
-    freq[m_trees[i].estimate(features)]++;
+    freq[(m_trees[i])->estimate(features)]++;
   }
   std::vector<double> result(NUM_CLASSES);
   for(int i=0;i < NUM_CLASSES; i++) {

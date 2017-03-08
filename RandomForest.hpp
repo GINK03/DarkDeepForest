@@ -1,16 +1,18 @@
 #pragma once
 #include <vector>
+#include "Tree.hpp"
 #include "DecisionTree.hpp"
+#include <boost/variant.hpp>
 typedef double FeatureType;
 typedef int AnswerType;
 namespace RandomForest {
 
 class RandomForest {
 private:
-  std::vector<DecisionTree> m_trees;    // たくさんの決定木
+  std::vector<Tree*> m_trees;    // たくさんの決定木
 public:
   RandomForest();
- 
+  ~RandomForest(); 
   void clear();
  
   // 訓練

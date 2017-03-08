@@ -34,7 +34,7 @@ enum class ForestType { Ordinal, Noisy, Odd };
 int ensemble(const vector<double> ins[]) {
   vector<double> tmp(ins[0].size());
   for(int i=0; i< ins[0].size(); i++ ) {
-    tmp[i] = (ins[0][i]*1 + ins[1][i]*1 + ins[2][i]*1+ ins[3][i]*1)/4.;
+    tmp[i] = (ins[0][i]*1 + ins[1][i]*0 + ins[2][i]*0+ ins[3][i]*0)/4.;
   }
   double max = *std::max_element(tmp.begin(), tmp.end());
   int res = -1;
@@ -111,7 +111,7 @@ int main()
     // 木を徐々に増やしていく
     for_each(irange(0, std::get<0>(tuple)), [&](int k) {
       // 学習
-      const int numAdditionalTrees = 1;
+      const int numAdditionalTrees = 100;
       if( std::get<2>(tuple) == ForestType::Ordinal ) {
         std::get<1>(tuple)->train(trainingFeatures, trainingAnswers, numAdditionalTrees, 1);
       } else if ( std::get<2>(tuple) == ForestType::Noisy ){
@@ -158,9 +158,13 @@ int main()
     for(auto real_feat: trainingFeatures[i]) {
        nextfeat.emplace_back(real_feat);
     }
+    auto all = 0.;
+    for(auto index: {0, 1, 2, 3} ) 
+      for(int i=0; i<NUM_CLASSES; i++) 
+        all += myAnswers[index][i];
     for(auto index: {0, 1, 2, 3}) { 
       for(int i=0; i<NUM_CLASSES; i++)
-        nextfeat[i + NUM_CLASSES*index] = myAnswers[index][i]/100;
+        nextfeat[i + NUM_CLASSES*index] = myAnswers[index][i]/all;
     }
     for(auto d: nextfeat) {
       cout << d << " ";
@@ -188,32 +192,31 @@ int main()
     auto rf1 = std::shared_ptr<RandomForest::RandomForest>(new RandomForest::RandomForest());
     auto rf2 = std::shared_ptr<RandomForest::RandomForest>(new RandomForest::RandomForest());
     auto rf1_noisy = std::shared_ptr<RandomForest::RandomForest>(new RandomForest::RandomForest());
-    //auto rf2_noisy = std::shared_ptr<RandomForest::RandomForest>(new RandomForest::RandomForest());
-    for(auto tuple: {
-               std::make_tuple(10, rf1, ForestType::Ordinal), 
-    	       std::make_tuple(10, rf2, ForestType::Ordinal), 
-	       std::make_tuple(10, rf1_noisy, ForestType::Noisy),
-	       std::make_tuple(10, rf2_noisy, ForestType::Noisy) } ) {
-      int numTrees = 0;
+    auto rf2_noisy = std::shared_ptr<RandomForest::RandomForest>(new RandomForest::RandomForest());
+    for(auto tuple: { //
+               std::make_tuple(10, rf1, ForestType::Ordinal, 1000), 
+    	       std::make_tuple(10, rf2, ForestType::Ordinal, 1000), 
+	       std::make_tuple(10, rf1_noisy, ForestType::Noisy, 1000),
+	       std::make_tuple(10, rf2_noisy, ForestType::Noisy, 1000) } ) {
       for_each(irange(0, std::get<0>(tuple)), [&](int k) {
-        const int numAdditionalTrees = 1;
+        const int numAdditionalTrees = 100;
         if( std::get<2>(tuple) == ForestType::Ordinal ) {
-          std::get<1>(tuple)->train(trainingFeatures, 
-	  		trainingAnswers, 
-			numAdditionalTrees, 
+          std::get<1>(tuple)->train(next_train_feats, 
+	  		next_train_ans, 
+			std::get<3>(tuple),
 			1);
         } else if( std::get<2>(tuple) == ForestType::Noisy ) {
-          std::get<1>(tuple)->train_noisy(trainingFeatures, 
-	  		trainingAnswers, 
-			numAdditionalTrees, 
+          std::get<1>(tuple)->train_noisy(next_train_feats, 
+	  		next_train_ans, 
+			std::get<3>(tuple),
 			RandXor::rand_range_1_10(), 
 			RandXor::rand_range_1_32(), 
 			RandXor::rand_range_1_10(), 
 			RandXor::rand_range_1_32() );
         } else if( std::get<2>(tuple) == ForestType::Odd ) {
-          std::get<1>(tuple)->train_noisy(trainingFeatures, 
-	                trainingAnswers,
-			numAdditionalTrees,
+          std::get<1>(tuple)->train_noisy(next_train_feats, 
+	                next_train_ans,
+			std::get<3>(tuple),
 			1, 
 			16,
 			2,
@@ -243,18 +246,30 @@ int main()
       	rf2->predict(trainingFeatures[i]),
       	rf1_noisy->predict(trainingFeatures[i]),
       	rf2_noisy->predict(trainingFeatures[i]) } ;
+      /*for(int i=0; i<12; i++) {
+         nextfeat.emplace_back(1.);
+      }*/
       for(auto real_feat: trainingFeatures[i]) {
          nextfeat.emplace_back(real_feat);
       }
+      auto all = 0.;
+      for(auto index: {0, 1, 2, 3} ) 
+        for(int i=0; i<NUM_CLASSES; i++) 
+          all += myAnswers[index][i];
+      
       for(auto index: {0, 1, 2, 3} ) {
         for(int i=0; i<NUM_CLASSES; i++) {
-          nextfeat[i + NUM_CLASSES*index] = myAnswers[index][i]/100;
+          nextfeat[i + NUM_CLASSES*index] = myAnswers[index][i]/all;
         }
       }
+      for(auto d: nextfeat) {
+        cout << d << " ";
+      }
+      cout << "deep " << DEEP << "d2 " << endl;
       const auto real_ans = trainingAnswers[i];
       std::pair<AnswerType, std::vector<FeatureType>> pair;
-      pair.first = real_ans;
-      pair.second = nextfeat;
+      pair.first   = real_ans;
+      pair.second  = nextfeat;
       next->answer_features.emplace_back(pair);
     }
     layer_container.emplace_back(next);

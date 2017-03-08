@@ -9,10 +9,10 @@ using namespace std;
 
 typedef double FeatureType;
 typedef int AnswerType;
-class DecisionTree : public Tree
+class RandomTree : public Tree
 {
 public:
-  DecisionTree();
+  RandomTree();
  
   // 学習。訓練データをいれて、決定木を作成する。
   // features           説明変数x0,x1,x2...
@@ -21,7 +21,7 @@ public:
   // maxLevel           ノードの深さの最大値
   // numRandomFeatures  領域を分けるときに試す説明変数（グラフでは軸）の数
   // numRandomPositions 領域を分けるときに試すデータ（グラフでは点）の数
-  DecisionTree(const vector<vector<FeatureType>>& features,
+  RandomTree(const vector<vector<FeatureType>>& features,
     const vector<AnswerType>& answers,
     int minNodeSize,
     int maxLevel,
