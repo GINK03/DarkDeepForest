@@ -1,3 +1,5 @@
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./
+export LD_LIBRARY_PATH
 rm *.so deepforest
 clang++ -std=c++14 RandGen.cpp -shared  -o librandgen.so -fPIC
 clang++ -std=c++14 TreeNode.cpp -shared  -o libtreenode.so -fPIC
